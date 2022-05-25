@@ -8,7 +8,7 @@ public class Libro {
     static{
 
         // Audio para reproducir
-        final String audioUri = "https://github.com/Edd27/FragmentosDinamicos2021/blob/main/app/raw/sound.mp3?raw=true";
+        final String audioUri = "https://github.com/Edd27/FragmentosDinamicos2021/blob/master/app/raw/sound.mp3?raw=true";
 
         libros.add(new Libro("Kappa", "Akutagawa", R.drawable.kappa, audioUri, Libro.G_S_XIX, false, false));
         libros.add(new Libro("Avecilla", "Alas Clarín, Leopoldo", R.drawable.avecilla, audioUri, Libro.G_S_XIX, true, false));

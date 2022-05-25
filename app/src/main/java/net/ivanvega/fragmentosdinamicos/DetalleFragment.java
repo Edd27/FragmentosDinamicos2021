@@ -229,7 +229,7 @@ public class DetalleFragment extends Fragment
     ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder iBinder) {
-            service = ((MiBinder)iBinder).getService();
+            service = ((LinkedService.CustomBinder)iBinder).getService();
             service.prepareMediaPlayer(DetalleFragment.this, uri);
         }
 

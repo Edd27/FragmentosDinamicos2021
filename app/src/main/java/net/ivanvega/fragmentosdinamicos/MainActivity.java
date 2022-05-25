@@ -11,23 +11,28 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (findViewById(R.id.contenedor_pequeno) != null &&
-                getSupportFragmentManager()
-                        .findFragmentById(R.id.contenedor_pequeno) == null
-        ) {
+        boolean onService = getIntent().getBooleanExtra("service", false);
+        if (onService) {
+            mostrarDetalle(-1, true);
+        } else {
+            if (findViewById(R.id.contenedor_pequeno) != null &&
+                    getSupportFragmentManager()
+                            .findFragmentById(R.id.contenedor_pequeno) == null
+            ) {
 
-            getSupportFragmentManager().beginTransaction().
-                    setReorderingAllowed(true)
-                    .add(
-                            R.id.contenedor_pequeno,
-                            SelectorFragment.class, null).commit();
+                getSupportFragmentManager().beginTransaction().
+                        setReorderingAllowed(true)
+                        .add(
+                                R.id.contenedor_pequeno,
+                                SelectorFragment.class, null).commit();
 
+            }
         }
 
 
     }
 
-    public void mostrarDetalle(int pos) {
+    public void mostrarDetalle(int pos, boolean onService) {
         DetalleFragment detalleFragment =
                 (DetalleFragment) getSupportFragmentManager().
                         findFragmentById(R.id.detalle_fragment);
@@ -39,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
                     new DetalleFragment();
             Bundle bundle = new Bundle();
 
+            bundle.putBoolean(
+                    DetalleFragment.ARG_INDEX_LIBRO, onService
+            );
             bundle.putInt(DetalleFragment.ARG_INDEX_LIBRO,
                     pos
             );
