@@ -39,10 +39,8 @@ public class LinkedService extends Service implements MediaController.MediaPlaye
         player = new MediaPlayer();
         try {
             player.setOnPreparedListener(onPreparedListener);
-            Intent stopIntent =
-                    new Intent(LinkedService.this, LinkedService.class);
-            player.setOnCompletionListener(
-                    mediaPlayer ->
+            Intent stopIntent = new Intent(LinkedService.this, LinkedService.class);
+            player.setOnCompletionListener(mediaPlayer ->
                             LinkedService.this.stopService(stopIntent)
             );
             player.setDataSource(getBaseContext(), uri);
@@ -71,7 +69,7 @@ public class LinkedService extends Service implements MediaController.MediaPlaye
         }
         String CHANNEL_ID = "1000";
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        notificationIntent.putExtra("flag_servicio", true);
+        notificationIntent.putExtra("service", true);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 2000,
                 notificationIntent, PendingIntent.FLAG_IMMUTABLE);
         Notification notification = new Notification.Builder(this, CHANNEL_ID)
