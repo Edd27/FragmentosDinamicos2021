@@ -1,11 +1,16 @@
 package net.ivanvega.fragmentosdinamicos;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -40,6 +45,9 @@ public class DetalleFragment extends Fragment
     MediaPlayer mediaPlayer;
     MediaController mediaController;
 
+    LinkedService service;
+    Libro uri;
+
     public DetalleFragment() {
         // Required empty public constructor
     }
@@ -60,6 +68,8 @@ public class DetalleFragment extends Fragment
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        Intent intent = new Intent(getContext(), LinkedService.class);
+        getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -215,4 +225,17 @@ public class DetalleFragment extends Fragment
         mediaPlayer.release();
         super.onStop();
     }
+
+    ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder iBinder) {
+            service = ((MiBinder)iBinder).getService();
+            service.prepareMediaPlayer(DetalleFragment.this, uri);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 }
