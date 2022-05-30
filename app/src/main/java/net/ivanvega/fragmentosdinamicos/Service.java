@@ -4,74 +4,92 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.MediaController;
-
-import androidx.annotation.Nullable;
 
 import java.io.IOException;
 
-public class LinkedService extends Service implements MediaController.MediaPlayerControl {
-
-    private final IBinder binder = new CustomBinder();
-    MediaPlayer player;
+public class Service extends android.app.Service implements MediaController.MediaPlayerControl {
+    private final IBinder mBinder = new MiBinder();
+    String TAG = "ServicioVinculado";
+    MediaPlayer mediaPlayer;
     Libro libro;
-    int pos = 0;
+    int posLibro = 0;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(TAG, "OnCreate");
+    }
+
+    @Override
+    public IBinder onBind(Intent arg0) {
+        return mBinder;
     }
 
     void prepareMediaPlayer(MediaPlayer.OnPreparedListener onPreparedListener, Libro libro) {
         this.libro = libro;
         Uri uri = Uri.parse(libro.getUrl());
-        if (player != null) {
-            player.reset();
-            player.release();
+        if (mediaPlayer != null) {
+            mediaPlayer.reset();
+            mediaPlayer.release();
         }
-        player = new MediaPlayer();
+        mediaPlayer = new MediaPlayer();
         try {
-            player.setOnPreparedListener(onPreparedListener);
-            Intent stopIntent = new Intent(LinkedService.this, LinkedService.class);
-            player.setOnCompletionListener(mediaPlayer ->
-                            LinkedService.this.stopService(stopIntent)
+            mediaPlayer.setOnPreparedListener(onPreparedListener);
+            Intent stopIntent =
+                    new Intent(Service.this, Service.class);
+            mediaPlayer.setOnCompletionListener(
+                    mediaPlayer ->
+                            Service.this.stopService(stopIntent)
             );
-            player.setDataSource(getBaseContext(), uri);
-            player.prepareAsync();
+            mediaPlayer.setDataSource(getBaseContext(), uri);
+            mediaPlayer.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        definePosLibro();
+        createNotificationChannel();
+        setAsForeground();
+    }
+
+    private void definePosLibro() {
         for (int i = 0; i < Libro.ejemplosLibros().size(); i++) {
             if (libro.getTitulo().equals(Libro.ejemplosLibros().elementAt(i).getTitulo())) {
-                pos = i;
+                posLibro = i;
                 break;
             }
         }
+    }
+
+    private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String CHANNEL_ID = "1000";
-            String name = "Audio";
-            String description = "Notification";
+            String name = "chanel name";
+            String description = "song description";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    private void setAsForeground() {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
             return;
         }
         String CHANNEL_ID = "1000";
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        notificationIntent.putExtra("service", true);
+        notificationIntent.putExtra("flag_servicio", true);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 2000,
-                notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+                    notificationIntent, PendingIntent.FLAG_IMMUTABLE);
         Notification notification = new Notification.Builder(this, CHANNEL_ID)
                 .setContentTitle(libro.getTitulo())
                 .setContentText(libro.getAutor())
@@ -81,48 +99,44 @@ public class LinkedService extends Service implements MediaController.MediaPlaye
         startForeground(2000, notification);
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        player.stop();
-        player.release();
+        Log.d(TAG, "Apagando servicio");
+        mediaPlayer.stop();
+        mediaPlayer.release();
         stopForeground(true);
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 
     @Override
     public void start() {
-
+        mediaPlayer.start();
     }
 
     @Override
     public void pause() {
-
+        mediaPlayer.pause();
     }
 
     @Override
     public int getDuration() {
-        return 0;
+        return mediaPlayer.getDuration();
     }
 
     @Override
     public int getCurrentPosition() {
-        return 0;
+        return mediaPlayer.getCurrentPosition();
     }
 
     @Override
     public void seekTo(int i) {
-
+        mediaPlayer.seekTo(i);
     }
 
     @Override
     public boolean isPlaying() {
-        return false;
+        return mediaPlayer.isPlaying();
     }
 
     @Override
@@ -132,17 +146,17 @@ public class LinkedService extends Service implements MediaController.MediaPlaye
 
     @Override
     public boolean canPause() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean canSeekBackward() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean canSeekForward() {
-        return false;
+        return true;
     }
 
     @Override
@@ -150,9 +164,9 @@ public class LinkedService extends Service implements MediaController.MediaPlaye
         return 0;
     }
 
-    public class CustomBinder extends Binder {
-        public LinkedService getService(){
-            return LinkedService.this;
+    public class MiBinder extends Binder {
+        public Service getService() {
+            return Service.this;
         }
     }
 }

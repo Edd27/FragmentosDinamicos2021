@@ -11,8 +11,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        boolean onService = getIntent().getBooleanExtra("service", false);
-        if (onService) {
+        boolean desdeServicio = getIntent().getBooleanExtra("flag_servicio", false);
+        if (desdeServicio) {
             mostrarDetalle(-1, true);
         } else {
             if (findViewById(R.id.contenedor_pequeno) != null &&
@@ -28,15 +28,14 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
-
-
     }
 
-    public void mostrarDetalle(int pos, boolean onService) {
+    public void mostrarDetalle(int pos, boolean desdeServicio) {
         DetalleFragment detalleFragment = new DetalleFragment();
         Bundle bundle = new Bundle();
 
-        bundle.putBoolean(DetalleFragment.ARG_INDEX_LIBRO, onService);
+        bundle.putBoolean(DetalleFragment.ARG_SERVICIO, desdeServicio);
+
         bundle.putInt(DetalleFragment.ARG_INDEX_LIBRO, pos);
 
         detalleFragment.setArguments(bundle);
@@ -46,6 +45,5 @@ public class MainActivity extends AppCompatActivity {
                 .replace(R.id.contenedor_pequeno, detalleFragment)
                 .addToBackStack(null)
                 .commit();
-
     }
 }

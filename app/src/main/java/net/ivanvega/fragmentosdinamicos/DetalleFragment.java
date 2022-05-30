@@ -18,12 +18,18 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.MediaController;
-import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import net.ivanvega.fragmentosdinamicos.Service.MiBinder;
+
 import java.io.IOException;
 
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link DetalleFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
 public class DetalleFragment extends Fragment
     implements MediaPlayer.OnPreparedListener,
         MediaController.MediaPlayerControl,
@@ -31,9 +37,14 @@ public class DetalleFragment extends Fragment
 
 {
 
+
+    public static final String ARG_SERVICIO =  "idLibro";
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
+    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
@@ -45,13 +56,23 @@ public class DetalleFragment extends Fragment
     MediaPlayer mediaPlayer;
     MediaController mediaController;
 
-    LinkedService service;
-    Libro uri;
+    Service mServicio;
+
+    Libro uriLibro;
 
     public DetalleFragment() {
         // Required empty public constructor
     }
 
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment DetalleFragment.
+     */
+    // TODO: Rename and change types and number of parameters
     public static DetalleFragment newInstance(String param1, String param2) {
         DetalleFragment fragment = new DetalleFragment();
         Bundle args = new Bundle();
@@ -68,9 +89,23 @@ public class DetalleFragment extends Fragment
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        Intent intent = new Intent(getContext(), LinkedService.class);
+        //CONECTAR
+        Intent intent = new Intent(getContext(), Service.class);
         getActivity().bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
+
+    ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder iBinder) {
+            mServicio = ((MiBinder)iBinder).getService();
+            mServicio.prepareMediaPlayer(DetalleFragment.this, uriLibro);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -121,6 +156,8 @@ public class DetalleFragment extends Fragment
         lblAutor.setText(libro.getAutor());
         imvPortada.setImageResource(libro.getRecursoImagen());
 
+        uriLibro = libro;
+
         if( mediaPlayer!= null){
             mediaPlayer.release();
         }
@@ -148,7 +185,7 @@ public class DetalleFragment extends Fragment
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
 
-        mediaController.setMediaPlayer(this);
+        mediaController.setMediaPlayer(mServicio);
         mediaController.setAnchorView(
                 getView().findViewById(R.id.fragment_detalle_layout_root));
         mediaController.setEnabled(true);
@@ -225,17 +262,4 @@ public class DetalleFragment extends Fragment
         mediaPlayer.release();
         super.onStop();
     }
-
-    ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder iBinder) {
-            service = ((LinkedService.CustomBinder)iBinder).getService();
-            service.prepareMediaPlayer(DetalleFragment.this, uri);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-
-        }
-    };
 }
